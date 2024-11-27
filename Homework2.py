@@ -52,7 +52,6 @@ def get_shop_list_by_dishes(dishes, person_count):
                 
     return shop_list
 
-# Пример вызова функции
 result = get_shop_list_by_dishes(['Запеченный картофель', 'Омлет'], 2)
 for ingredient, info in result.items():
     print(f'{ingredient}: {info}')
