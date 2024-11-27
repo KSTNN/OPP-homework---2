@@ -1,42 +1,34 @@
-# задача номер 1
-print('Задача №-1\n')
-cook_book = {}
-
-with open('recipes.txt', 'r', encoding='utf-8') as file:
-    dish_name = ''
-    
-    for line in file:
-        line = line.strip()
-        
-        if not line:
-            continue
-        if line.isdigit():
-            continue
-        
-        if '|' not in line:
-            dish_name = line
-            cook_book[dish_name] = []
-        else:
-            ingredient_name, quantity, measure = line.split(" | ")
-            cook_book[dish_name].append({
-                'ingredient_name': ingredient_name,
-                'quantity': int(quantity),
-                'measure': measure
-            })
-
-# Вывод каждого блюда с ингредиентами в формате словаря с указанием количества ингредиентов
-for dish, ingredients in cook_book.items():
-    print(f'{dish}:')
-    for ingredient in ingredients:
-        print(ingredient)
-    print()  # Добавляем пустую строку для разделения блюд
+def read_recipes(file_path):
+    cook_book = {}
+    with open(file_path, 'r', encoding='utf-8') as file:
+        dish_name = ''
+        for line in file:
+            line = line.strip()
+            if not line or line.isdigit():
+                continue
+            if '|' not in line:
+                dish_name = line
+                cook_book[dish_name] = []
+            else:
+                ingredient_name, quantity, measure = line.split(" | ")
+                cook_book[dish_name].append({
+                    'ingredient_name': ingredient_name,
+                    'quantity': int(quantity),
+                    'measure': measure
+                })
+    return cook_book
 
 
-# задача номер 2
-print('Задача №-2\n')
-def get_shop_list_by_dishes(dishes, person_count):
+def print_recipes(cook_book):
+    for dish, ingredients in cook_book.items():
+        print(f'{dish}:')
+        for ingredient in ingredients:
+            print(ingredient)
+        print()
+
+
+def get_shop_list_by_dishes(cook_book, dishes, person_count):
     shop_list = {}
-    
     for dish in dishes:
         if dish in cook_book:
             ingredients = cook_book[dish]
@@ -44,53 +36,63 @@ def get_shop_list_by_dishes(dishes, person_count):
                 ingredient_name = ingredient['ingredient_name']
                 quantity = ingredient['quantity'] * person_count
                 measure = ingredient['measure']
-                
                 if ingredient_name not in shop_list:
                     shop_list[ingredient_name] = {'measure': measure, 'quantity': quantity}
                 else:
                     shop_list[ingredient_name]['quantity'] += quantity
-                
     return shop_list
 
-result = get_shop_list_by_dishes(['Запеченный картофель', 'Омлет'], 2)
-for ingredient, info in result.items():
-    print(f'{ingredient}: {info}')
 
-print('-------------------------')
+def merge_and_sort_files(file_paths, output_file):
+    # Список для хранения информации о файлах
+    files_info = []
 
-# Задача №3:
-with open('1.txt', 'r', encoding='utf-8') as file_1:
-    line_1 = {}
-    count_1 = 0
-    for line in file_1.readlines():
-        count_1 += 1
-        line_1['1.txt'] = count_1
-with open('1.txt', 'r', encoding='utf-8') as file_1:
-    text_1 = file_1.read()
+    # Проходимся по каждому файлу
+    for file_path in file_paths:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            # Читаем весь файл построчно
+            content = file.readlines()
 
-with open('2.txt', 'r', encoding='utf-8') as file_2:
-    line_2 = {}
-    count_2 = 0
-    for line in file_2.readlines():
-        count_2 += 1
-        line_2['2.txt'] = count_2
-with open('2.txt', 'r', encoding='utf-8') as file_2:
-    text_2 = file_2.read()
+            # Подсчитываем количество строк
+            num_lines = len(content)
 
-with open('3.txt', 'r', encoding='utf-8') as file_3:
-    line_3 = {}
-    count_3 = 0
-    for line in file_3.readlines():
-        count_3 += 1
-        line_3['3.txt'] = count_3
-with open('3.txt', 'r', encoding='utf-8') as file_3:
-    text_3 = file_3.read()
+        # Добавляем информацию о файле в список
+        files_info.append({
+            'path': file_path,
+            'num_lines': num_lines,
+            'content': content
+        })
 
-join = sorted(list(line_1.items()) + list(line_2.items()) + list(line_3.items()), key=lambda x: x[1])
+    # Сортируем файлы по количеству строк
+    sorted_files = sorted(files_info, key=lambda x: x['num_lines'])
 
-with open('result.txt', 'w', encoding='utf-8') as file_result:
-    for line in join:
-        file_result.write(f'{line[0]}\n {line[1]}\n {text_2 if line[0] == "2.txt" else text_1 if line[0] == "1.txt" else text_3}\n')
+    # Записываем результат в выходной файл
+    with open(output_file, 'w', encoding='utf-8') as outfile:
+        for file_data in sorted_files:
+            # Пишем имя файла
+            outfile.write(f"{file_data['path']}\n")
+            # Пишем количество строк
+            outfile.write(f"{file_data['num_lines']}\n")
+            # Пишем содержимое файла с отступами
+            for line in file_data['content']:
+                outfile.write(line)
+            # Делаем пустую строку между файлами
+            outfile.write("\n")
 
 
+def main():
+    cook_book = read_recipes('recipes.txt')
+    print('Задача №-1\n')
+    print_recipes(cook_book)
+    print('Задача №-2\n')
+    result = get_shop_list_by_dishes(cook_book, ['Запеченный картофель', 'Омлет'], 2)
+    for ingredient, info in result.items():
+        print(f'{ingredient}: {info}')
+    print('Задача №-3\n')
+    file_paths = ['1.txt', '2.txt', '3.txt']
+    merge_and_sort_files(file_paths, 'result.txt')
+
+
+if __name__ == '__main__':
+    main()
 
